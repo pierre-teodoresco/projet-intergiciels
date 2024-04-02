@@ -9,7 +9,7 @@ import java.util.HashMap;
 public class Channel<T> implements go.Channel<T> {
     private String name;
     private T message;
-    private boolean isMessageAvailable; // true if message is available to read false otherwise
+    private boolean isMessageAvailable; // true if message is available to read on the channel false otherwise
     private Map<Direction, Observer> observers;
 
     public Channel(String name) {
