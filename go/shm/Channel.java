@@ -72,6 +72,7 @@ public class Channel<T> implements go.Channel<T> {
     private void notifyObservers(Direction dir) {
         if (!observers.isEmpty() && observers.containsKey(dir)) {
             observers.get(dir).update();
+            observers.remove(dir);
         }
     }
 }
