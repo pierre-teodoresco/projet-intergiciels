@@ -10,6 +10,8 @@ public class Channel<T> implements go.Channel<T> {
     private String name;
     private T message;
     private boolean isMessageAvailable; // true if message is available to read on the channel false otherwise
+    private boolean isOutPending; // true if a message is pending to be written on the channel false otherwise
+    private boolean isInPending; // true if a message is pending to be read from the channel false otherwise
     private Map<Direction, Observer> observers;
 
     public Channel(String name) {
@@ -28,6 +30,7 @@ public class Channel<T> implements go.Channel<T> {
         }
         message = v;
         isMessageAvailable = true;
+        notifyObservers(Direction.Out);
         notifyAll();
     }
     
@@ -37,11 +40,12 @@ public class Channel<T> implements go.Channel<T> {
                 wait();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                return null; // or handle differently
+                return null;
             }
         }
         T message = this.message;
         isMessageAvailable = false;
+        notifyObservers(Direction.In);
         notifyAll();
         return message;
     }
@@ -53,5 +57,21 @@ public class Channel<T> implements go.Channel<T> {
     public void observe(Direction dir, Observer observer) {
         observers.put(dir, observer);
     }
-        
+
+    public boolean isPending(Direction direction) {
+        switch (direction) {
+            case In:
+                return !isMessageAvailable;
+            case Out:
+                return isMessageAvailable;
+            default:
+                return false;
+        }
+    }
+
+    private void notifyObservers(Direction dir) {
+        if (!observers.isEmpty() && observers.containsKey(dir)) {
+            observers.get(dir).update();
+        }
+    }
 }
