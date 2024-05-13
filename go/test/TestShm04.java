@@ -38,11 +38,11 @@ public class TestShm04 {
         }).start();
 
         new Thread(() -> {
-                try { Thread.sleep(100);  } catch (InterruptedException e) { }
-                int v = c.in();
-                quit(v == 4 ? "ok" : "KO");
-                v = c.in();
-                quit(v == 5 ? "ok" : "KO");
+            try { Thread.sleep(100);  } catch (InterruptedException e) { }
+            int v = c.in();
+            quit(v == 4 ? "ok" : "KO");
+            v = c.in();
+            quit(v == 5 ? "ok" : "KO");
         }).start();
         
                    

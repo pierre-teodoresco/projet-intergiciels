@@ -22,4 +22,7 @@ public interface Channel<T> extends java.io.Serializable {
      * If an in/out operation is already pending when observe is called, it
      * immediately fires. */
     public void observe(Direction direction, Observer observer);
+
+    /** Check for a specific direction if the operation is pending. */
+    public boolean isPending(Direction direction);
 }

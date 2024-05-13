@@ -19,29 +19,29 @@ public class TestShm11 {
 
         Selector s = factory.newSelector(java.util.Set.of(c1, c2, c3), Direction.In); 
         new Thread(() -> {
-                try { Thread.sleep(2000);  } catch (InterruptedException e) { }
-                quit("KO (deadlock)");
+            try { Thread.sleep(2000);  } catch (InterruptedException e) { }
+            quit("KO (deadlock)");
         }).start();
         
         new Thread(() -> {
-                c1.out(4);
-                try { Thread.sleep(100);  } catch (InterruptedException e) { }
-                c2.out(6);
+            c1.out(4);
+            try { Thread.sleep(100);  } catch (InterruptedException e) { }
+            c2.out(6);
         }).start();
 
         new Thread(() -> {
-                try { Thread.sleep(100);  } catch (InterruptedException e) { }
-                @SuppressWarnings("unchecked")
-                Channel<Integer> c = s.select();
-                int v = c.in();
-                if (v != 4) quit("KO");
+            try { Thread.sleep(100);  } catch (InterruptedException e) { }
+            @SuppressWarnings("unchecked")
+            Channel<Integer> c = s.select();
+            int v = c.in();
+            if (v != 4) quit("KO");
 
-                @SuppressWarnings("unchecked")
-                Channel<Integer> cc = s.select();
-                v = cc.in();
-                if (v != 6) quit("KO");
+            @SuppressWarnings("unchecked")
+            Channel<Integer> cc = s.select();
+            v = cc.in();
+            if (v != 6) quit("KO");
 
-                quit("ok");
+            quit("ok");
         }).start();
     }
 }

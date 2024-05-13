@@ -16,27 +16,27 @@ public class TestShm03 {
         Channel<Integer> c = factory.newChannel("c");
 
         new Thread(() -> {
-                try { Thread.sleep(2000);  } catch (InterruptedException e) { }
-                quit("KO (deadlock)");
+            try { Thread.sleep(2000);  } catch (InterruptedException e) { }
+            quit("KO (deadlock)");
         }).start();
         
         new Thread(() -> {
-                c.out(4);
-                c.out(5);
+            c.out(4);
+            c.out(5);
         }).start();
 
         new Thread(() -> {
-                try { Thread.sleep(100);  } catch (InterruptedException e) { }
-                int v = c.in();
-                if (v != 4) quit("KO");
+            try { Thread.sleep(100);  } catch (InterruptedException e) { }
+            int v = c.in();
+            if (v != 4) quit("KO");
         }).start();
 
         new Thread(() -> {
-                try { Thread.sleep(200);  } catch (InterruptedException e) { }
-                int v = c.in();
-                quit(v == 5 ? "ok" : "KO");
+            try { Thread.sleep(200);  } catch (InterruptedException e) { }
+            int v = c.in();
+            quit(v == 5 ? "ok" : "KO");
         }).start();
 
-                   
+
     }
 }

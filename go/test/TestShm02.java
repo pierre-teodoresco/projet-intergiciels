@@ -16,8 +16,8 @@ public class TestShm02 {
         Channel<Integer> c = factory.newChannel("c");
 
         new Thread(() -> {
-                try { Thread.sleep(2000);  } catch (InterruptedException e) { }
-                quit("KO (deadlock)");
+            try { Thread.sleep(2000);  } catch (InterruptedException e) { }
+            quit("KO (deadlock)");
         }).start();
 
         new Thread(() -> {

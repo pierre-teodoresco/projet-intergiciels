@@ -16,8 +16,8 @@ public class TestCS20a {
         Channel<Integer> c = factory.newChannel("c");
 
         new Thread(() -> {
-                try { Thread.sleep(5000);  } catch (InterruptedException e) { }
-                quit("KO (deadlock)");
+            try { Thread.sleep(5000);  } catch (InterruptedException e) { }
+            quit("KO (deadlock)");
         }).start();
         
         c.out(4);

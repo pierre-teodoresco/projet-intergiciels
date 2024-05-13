@@ -70,4 +70,12 @@ public class Channel<T> implements go.Channel<T> {
             it.remove();
         }
     }
+
+    public boolean isPending(Direction direction) {
+        switch (direction) {
+            case In : return isMessageAvailable;
+            case Out: return !isMessageAvailable;
+            default: return false; // pfeuh, compilateur incompétent
+        }
+    }
 }

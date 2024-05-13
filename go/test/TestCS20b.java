@@ -16,8 +16,8 @@ public class TestCS20b {
         Channel<Integer> c = factory.newChannel("c");
 
         new Thread(() -> {
-                try { Thread.sleep(5000);  } catch (InterruptedException e) { }
-                quit("KO (deadlock)");
+            try { Thread.sleep(5000);  } catch (InterruptedException e) { }
+            quit("KO (deadlock)");
         }).start();
         
         int v = c.in();
