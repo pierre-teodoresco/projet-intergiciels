@@ -1,7 +1,9 @@
 package go.test;
 
 import go.Channel;
+import go.Direction;
 import go.Factory;
+import go.Observer;
 
 /** out | (in;in) | out */
 public class TestShm04 {
@@ -14,14 +16,20 @@ public class TestShm04 {
     public static void main(String[] a) {
         Factory factory = new go.shm.Factory();
         Channel<Integer> c = factory.newChannel("c");
+        c.observe(Direction.Out, new Observer() {
+                public void update() {
+                    System.out.println("c.out");
+                }
+            }
+        );
 
         new Thread(() -> {
-                try { Thread.sleep(2000);  } catch (InterruptedException e) { }
-                quit("KO (deadlock)");
+            try { Thread.sleep(2000);  } catch (InterruptedException e) { }
+            quit("KO (deadlock)");
         }).start();
         
         new Thread(() -> {
-                c.out(4);
+            c.out(4);
         }).start();
 
         new Thread(() -> {

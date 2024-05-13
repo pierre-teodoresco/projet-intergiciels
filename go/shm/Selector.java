@@ -15,7 +15,6 @@ public class Selector implements go.Selector {
     }
 
     public Channel select() {
-        // TODO
-        return null;
+        
     }
 }

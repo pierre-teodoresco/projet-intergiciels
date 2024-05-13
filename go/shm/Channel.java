@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.text.html.HTMLDocument.Iterator;
+
 public class Channel<T> implements go.Channel<T> {
     private final String name;
     private T message;
@@ -60,9 +62,12 @@ public class Channel<T> implements go.Channel<T> {
         observers.get(dir).add(observer);
     }
 
+
     private void notifyObservers(Direction dir) {
-        for (Observer observer : observers.get(dir)) {
-            observer.update();
+        java.util.Iterator<Observer> it = observers.get(dir).iterator();
+        while (it.hasNext()) {
+            it.next().update();
+            it.remove();
         }
     }
 }
