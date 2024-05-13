@@ -49,7 +49,5 @@ public class TestShm13 {
                 ccc.out(6);
                 quit("ok");
         }).start();
-        
-                   
     }
 }

@@ -3,21 +3,23 @@ package go.shm;
 import go.Direction;
 import go.Observer;
 
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Channel<T> implements go.Channel<T> {
-    private String name;
+    private final String name;
     private T message;
-    private boolean isMessageAvailable; // true if message is available to read on the channel false otherwise
-    private boolean isOutPending; // true if a message is pending to be written on the channel false otherwise
-    private boolean isInPending; // true if a message is pending to be read from the channel false otherwise
-    private Map<Direction, Observer> observers;
+    private boolean isMessageAvailable;
+    private final Map<Direction, List<Observer>> observers;
 
     public Channel(String name) {
         this.name = name;
         isMessageAvailable = false;
         observers = new HashMap<>();
+        observers.put(Direction.In, new ArrayList<>());
+        observers.put(Direction.Out, new ArrayList<>());
     }
 
     public synchronized void out(T v) {
@@ -55,24 +57,12 @@ public class Channel<T> implements go.Channel<T> {
     }
 
     public void observe(Direction dir, Observer observer) {
-        observers.put(dir, observer);
-    }
-
-    public boolean isPending(Direction direction) {
-        switch (direction) {
-            case In:
-                return !isMessageAvailable;
-            case Out:
-                return isMessageAvailable;
-            default:
-                return false;
-        }
+        observers.get(dir).add(observer);
     }
 
     private void notifyObservers(Direction dir) {
-        if (!observers.isEmpty() && observers.containsKey(dir)) {
-            observers.get(dir).update();
-            observers.remove(dir);
+        for (Observer observer : observers.get(dir)) {
+            observer.update();
         }
     }
 }

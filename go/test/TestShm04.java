@@ -7,7 +7,7 @@ import go.Factory;
 public class TestShm04 {
 
     private static void quit(String msg) {
-        System.out.println("TestShm02: " + msg);
+        System.out.println("TestShm04: " + msg);
         System.exit(msg.equals("ok") ? 0 : 1);
     }
 

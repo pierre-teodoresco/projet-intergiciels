@@ -32,7 +32,5 @@ public class TestShm20 {
                 Channel<Integer> c = c1.in();
                 c.out(4);
         }).start();
-        
-                   
     }
 }

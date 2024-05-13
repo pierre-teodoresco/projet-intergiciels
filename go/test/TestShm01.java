@@ -29,7 +29,5 @@ public class TestShm01 {
                 int v = c.in();
                 quit(v == 4 ? "ok" : "KO");
         }).start();
-        
-                   
     }
 }

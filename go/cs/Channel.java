@@ -26,10 +26,4 @@ public class Channel<T> implements go.Channel<T> {
     public void observe(Direction direction, Observer observer) {
         // TODO
     }
-
-    @Override
-    public boolean isPending(Direction direction) {
-        // TODO
-        return false;
-    }
 }

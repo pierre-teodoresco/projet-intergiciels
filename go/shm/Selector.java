@@ -15,22 +15,7 @@ public class Selector implements go.Selector {
     }
 
     public Channel select() {
-        while (true) {
-            for (Map.Entry<Channel, Direction> entry : channels.entrySet()) {
-                Channel channel = entry.getKey();
-                Direction direction = entry.getValue();
-
-                if (channel.isPending(Direction.inverse(direction))) {
-                    return channel; // return the first ready channel
-                }
-            }
-
-            // little sleep to avoid busy waiting
-            try {
-                Thread.sleep(1);
-            } catch (InterruptedException e) {
-                // ignore
-            }
-        }
+        // TODO
+        return null;
     }
 }
