@@ -26,7 +26,7 @@ public class TestShm11 {
         new Thread(() -> {
             c1.out(4);
             try { Thread.sleep(100);  } catch (InterruptedException e) { }
-            c2.out(6);
+            c1.out(6);
         }).start();
 
         new Thread(() -> {
@@ -36,8 +36,6 @@ public class TestShm11 {
             int v = c.in();
             if (v != 4) {
                 quit("KO");
-            } else {
-                System.out.println("TestShm11: c.in() = " + v);
             }
 
             @SuppressWarnings("unchecked")
@@ -45,8 +43,6 @@ public class TestShm11 {
             v = cc.in();
             if (v != 6) {
                 quit("KO");
-            } else {
-                System.out.println("TestShm11: cc.in() = " + v);
             }
 
             quit("ok");

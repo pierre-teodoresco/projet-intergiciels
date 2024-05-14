@@ -2,49 +2,39 @@ package go.shm;
 
 import go.Direction;
 import go.Channel;
-import java.util.Map;
 
-public class Selector implements go.Selector, go.Observer {
-    private boolean isReady;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.concurrent.Semaphore;
+
+public class Selector implements go.Selector {
     private final Map<Channel, Direction> channels;
+    private Semaphore sem = new Semaphore(0);
 
     public Selector(Map<Channel, Direction> channels) {
         this.channels = channels;
-        isReady = false;
     }
 
     public Channel select() {
-        synchronized(this) {
-            while(true) {
-                // Choisir le premier canal prêt ou observer tous les canaux
-                for (Map.Entry<Channel, Direction> entry : channels.entrySet()) {
-                    Channel channel = entry.getKey();
-                    Direction direction = entry.getValue();
-                    if (channel.isReady(direction)) {
-                        return channel;
-                    } else {
-                        channel.observe(Direction.inverse(direction), this);
-                    }
-                }
-                // Attendre qu'un canal soit prêt
-                isReady = false;
-                while (!isReady) {
-                    try {
-                        wait();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        return null;
-                    }
-                }
-            }
-        }
-    }
+        ArrayList<Channel> ch = new ArrayList<>();
 
-    public void update() {
-        synchronized(this) {
-            isReady = true;
-            notifyAll();
+        channels.forEach((channel, direction) -> {
+            channel.observe(Direction.inverse(direction), () -> {
+                ch.add(channel);
+                sem.release();
+            });
+        });
+
+        try {
+            // wait for a channel to be updated
+            sem.acquire();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
+
+        // return the first channel updated
+        return ch.get(0);
     }
 }
+
 
