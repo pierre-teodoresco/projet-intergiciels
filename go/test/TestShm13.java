@@ -31,6 +31,7 @@ public class TestShm13 {
             if (v != 4) quit("KO");
             try { Thread.sleep(100);  } catch (InterruptedException e) { }
             c3.out(8);
+            try { Thread.sleep(100);  } catch (InterruptedException e) { }
             v = c2.in();
             if (v != 6) quit("KO");
         }).start();

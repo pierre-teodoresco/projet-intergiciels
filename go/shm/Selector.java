@@ -2,6 +2,7 @@ package go.shm;
 
 import go.Direction;
 import go.Channel;
+import log.Logger;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -20,6 +21,7 @@ public class Selector implements go.Selector {
 
         channels.forEach((channel, direction) -> {
             channel.observe(Direction.inverse(direction), () -> {
+                Logger.log("Channel " + channel.getName() + " updated");
                 ch.add(channel);
                 sem.release();
             });
@@ -33,7 +35,9 @@ public class Selector implements go.Selector {
         }
 
         // return the first channel updated
-        return ch.get(0);
+        Channel c = ch.getFirst();
+        Logger.log("Selected channel: " + c.getName());
+        return c;
     }
 }
 
