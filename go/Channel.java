@@ -23,6 +23,6 @@ public interface Channel<T> extends java.io.Serializable {
      * immediately fires. */
     public void observe(Direction direction, Observer observer);
 
-    /** Check for a specific direction if the operation is pending. */
-    public boolean isPending(Direction direction);
+    /** Check for a specific direction if the operation is ready. */
+    public boolean isReady(Direction direction);
 }

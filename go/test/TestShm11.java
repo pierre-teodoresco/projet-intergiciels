@@ -34,12 +34,20 @@ public class TestShm11 {
             @SuppressWarnings("unchecked")
             Channel<Integer> c = s.select();
             int v = c.in();
-            if (v != 4) quit("KO");
+            if (v != 4) {
+                quit("KO");
+            } else {
+                System.out.println("TestShm11: c.in() = " + v);
+            }
 
             @SuppressWarnings("unchecked")
             Channel<Integer> cc = s.select();
             v = cc.in();
-            if (v != 6) quit("KO");
+            if (v != 6) {
+                quit("KO");
+            } else {
+                System.out.println("TestShm11: cc.in() = " + v);
+            }
 
             quit("ok");
         }).start();

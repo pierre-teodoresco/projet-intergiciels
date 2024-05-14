@@ -27,7 +27,7 @@ public class Channel<T> implements go.Channel<T> {
         // TODO
     }
 
-    public boolean isPending(Direction direction) {
+    public boolean isReady(Direction direction) {
         // TODO
         return false;
     }

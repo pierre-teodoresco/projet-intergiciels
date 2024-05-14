@@ -7,51 +7,66 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.swing.text.html.HTMLDocument.Iterator;
+import java.util.Iterator;
 
 public class Channel<T> implements go.Channel<T> {
     private final String name;
     private T message;
-    private boolean isMessageAvailable;
+    private boolean isEmpty, isInReady, isOutReady;
     private final Map<Direction, List<Observer>> observers;
 
     public Channel(String name) {
         this.name = name;
-        isMessageAvailable = false;
+        isEmpty = true;
+        isInReady = false;
+        isOutReady = false;
         observers = new HashMap<>();
         observers.put(Direction.In, new ArrayList<>());
         observers.put(Direction.Out, new ArrayList<>());
     }
 
     public synchronized void out(T v) {
-        while (isMessageAvailable) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
+        // Remplir le canal
         message = v;
-        isMessageAvailable = true;
-        notifyObservers(Direction.Out);
+        isEmpty = false;
+
+        // Notifier que le canal est plein
         notifyAll();
-    }
-    
-    public synchronized T in() {
-        while (!isMessageAvailable) {
+
+        // Attendre que quelqu'un vide le canal et prévenir les observateurs
+        isInReady = true;
+        updateObservers(Direction.Out);
+        while (!isEmpty) {
             try {
                 wait();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                return null;
             }
         }
-        T message = this.message;
-        isMessageAvailable = false;
-        notifyObservers(Direction.In);
+        isInReady = false;
+    }
+
+    public synchronized T in() {
+        // Attendre que quelqu'un vide le canal et prévenir les observateurs
+        isOutReady = true;
+        updateObservers(Direction.In);
+        while (isEmpty) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        isOutReady = false;
+
+        // Vider le canal
+        T v = message;
+        isEmpty = true;
+
+        // Notifier que le canal est vide
         notifyAll();
-        return message;
+
+        return v;
     }
 
     public String getName() {
@@ -62,19 +77,18 @@ public class Channel<T> implements go.Channel<T> {
         observers.get(dir).add(observer);
     }
 
-
-    private void notifyObservers(Direction dir) {
-        java.util.Iterator<Observer> it = observers.get(dir).iterator();
+    private void updateObservers(Direction dir) {
+        Iterator<Observer> it = observers.get(dir).iterator();
         while (it.hasNext()) {
             it.next().update();
             it.remove();
         }
     }
 
-    public boolean isPending(Direction direction) {
+    public boolean isReady(Direction direction) {
         switch (direction) {
-            case In : return isMessageAvailable;
-            case Out: return !isMessageAvailable;
+            case In : return isInReady;
+            case Out: return isOutReady;
             default: return false; // pfeuh, compilateur incompétent
         }
     }

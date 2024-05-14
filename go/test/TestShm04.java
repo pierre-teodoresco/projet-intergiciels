@@ -16,12 +16,7 @@ public class TestShm04 {
     public static void main(String[] a) {
         Factory factory = new go.shm.Factory();
         Channel<Integer> c = factory.newChannel("c");
-        c.observe(Direction.Out, new Observer() {
-                public void update() {
-                    System.out.println("c.out");
-                }
-            }
-        );
+        c.observe(Direction.Out, () -> System.out.println("c.out"));
 
         new Thread(() -> {
             try { Thread.sleep(2000);  } catch (InterruptedException e) { }

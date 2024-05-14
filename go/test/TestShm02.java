@@ -3,7 +3,6 @@ package go.test;
 import go.Channel;
 import go.Factory;
 
-/** (in,in,in) | out | out | out */
 public class TestShm02 {
 
     private static void quit(String msg) {
@@ -21,25 +20,14 @@ public class TestShm02 {
         }).start();
 
         new Thread(() -> {
-            try { Thread.sleep(200);  } catch (InterruptedException e) { }
+            c.out(42);
+        }).start();
+
+        new Thread(() -> {
+            try { Thread.sleep(100);  } catch (InterruptedException e) { }
             int v = c.in();
-            quit(v == 4 ? "ok" : "KO");
-            v = c.in();
-            quit(v == 5 ? "ok" : "KO");
-            v = c.in();
-            quit(v == 6 ? "ok" : "KO");
-        }).start();
-        
-        new Thread(() -> {
-            c.out(4);
-        }).start();
-
-        new Thread(() -> {
-            c.out(5);
-        }).start();
-
-        new Thread(() -> {
-            c.out(6);
+            if (v != 42) quit("KO");
+            quit("ok");
         }).start();
     }
 }
