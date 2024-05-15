@@ -2,79 +2,54 @@ package go.shm;
 
 import go.Direction;
 import go.Observer;
+import log.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Iterator;
+import java.util.concurrent.Semaphore;
 
 public class Channel<T> implements go.Channel<T> {
     private final String name;
     private T message;
-    private boolean isEmpty, writing, reading;
-    private final Map<Direction, List<Observer>> observers;
+    private boolean reading = false, writing = false;
+    private final Map<Direction, List<Observer>> observers = new HashMap<>();
+    private Semaphore semOut = new Semaphore(0), semIn = new Semaphore(0);
 
     public Channel(String name) {
         this.name = name;
-        isEmpty = true;
-        writing = false;
-        reading = false;
-        observers = new HashMap<>();
         observers.put(Direction.In, new ArrayList<>());
         observers.put(Direction.Out, new ArrayList<>());
     }
 
     public synchronized void out(T v) {
-        // Annoncer qu'on écrit
         writing = true;
-        updateObservers(Direction.Out);
-
-        // Remplir le canal
         message = v;
-        isEmpty = false;
-
-        // Notifier que le canal est plein
-        notifyAll();
-
-        // Attendre que quelqu'un vide le canal
-        while (!isEmpty) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+        updateObservers(Direction.In);
+        semOut.release();
+        try {
+            Logger.log("Channel " + name + " waiting for in...");
+            semIn.acquire();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
-
-        // Annoncer qu'on a fini d'écrire
         writing = false;
     }
 
     public synchronized T in() {
-        // Annoncer qu'on lit
         reading = true;
-        updateObservers(Direction.In);
-
-        // Attendre que quelqu'un vide le canal
-        while (isEmpty) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+        updateObservers(Direction.Out);
+        try {
+            Logger.log("Channel " + name + " waiting for out...");
+            semOut.acquire();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
-
-        // Vider le canal
-        T v = message;
-        isEmpty = true;
-
-        // Notifier que le canal est vide
-        notifyAll();
-
-        // Annoncer qu'on a fini de lire
+        semIn.release();
         reading = false;
-
-        return v;
+        return message;
     }
 
     public String getName() {
@@ -87,7 +62,9 @@ public class Channel<T> implements go.Channel<T> {
         } else if (dir == Direction.Out && writing) {
             observer.update();
         } else {
-            observers.get(dir).add(observer);
+            if (!observers.get(dir).contains(observer)) {
+                observers.get(dir).add(observer);
+            }
         }
     }
 
@@ -96,14 +73,6 @@ public class Channel<T> implements go.Channel<T> {
         while (it.hasNext()) {
             it.next().update();
             it.remove();
-        }
-    }
-
-    public boolean isReady(Direction direction) {
-        switch (direction) {
-            case In : return writing;
-            case Out: return reading;
-            default: return false; // pfeuh, compilateur incompétent
         }
     }
 }

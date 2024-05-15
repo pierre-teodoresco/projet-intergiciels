@@ -36,7 +36,5 @@ public class TestShm03 {
             int v = c.in();
             quit(v == 5 ? "ok" : "KO");
         }).start();
-
-
     }
 }

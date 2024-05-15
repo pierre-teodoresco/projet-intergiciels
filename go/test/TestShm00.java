@@ -2,6 +2,7 @@ package go.test;
 
 import go.Channel;
 import go.Factory;
+import log.Logger;
 
 /** Un unique in/out, commençant par out */
 public class TestShm00 {
@@ -12,6 +13,8 @@ public class TestShm00 {
     }
 
     public static void main(String[] a) {
+        Logger.setDebug(true);
+
         Factory factory = new go.shm.Factory();
         Channel<Integer> c = factory.newChannel("c");
 

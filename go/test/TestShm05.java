@@ -16,14 +16,12 @@ public class TestShm05 {
     public static void main(String[] a) {
         Factory factory = new go.shm.Factory();
         Channel<Integer> c = factory.newChannel("c");
-        
 
         new Thread(() -> {
             try { Thread.sleep(2000);  } catch (InterruptedException e) { }
             quit("KO (deadlock)");
         }).start();
-        
-        
+
         new Thread(() -> {
             c.out(4);
         }).start();
@@ -35,7 +33,6 @@ public class TestShm05 {
                 if (v != 4) {
                     quit("KO");
                 }
-                System.out.println(Thread.currentThread().getName() + " ok");
             });
             quit("ok");
         }).start();
