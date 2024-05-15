@@ -1,7 +1,7 @@
 package go.test;
 
-import go.Direction;
 import go.*;
+import log.Logger;
 
 /* select mixte */
 public class TestShm13 {
@@ -12,6 +12,8 @@ public class TestShm13 {
     }
 
     public static void main(String[] a) {
+        Logger.setDebug(true);
+
         Factory factory = new go.shm.Factory();
         Channel<Integer> c1 = factory.newChannel("c1");
         Channel<Integer> c2 = factory.newChannel("c2");

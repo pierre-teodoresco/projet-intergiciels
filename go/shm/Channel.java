@@ -24,32 +24,45 @@ public class Channel<T> implements go.Channel<T> {
         observers.put(Direction.Out, new ArrayList<>());
     }
 
-    public synchronized void out(T v) {
-        writing = true;
-        message = v;
-        updateObservers(Direction.In);
+    public void out(T v) {
+        synchronized(this) {
+            Logger.log("Début out sur " + name + "...");
+            writing = true;
+            message = v;
+            Logger.log("Update observers...");
+            updateObservers(Direction.Out);
+        }
         semOut.release();
         try {
-            Logger.log("Channel " + name + " waiting for in...");
+            Logger.log("Channel " + name + " waiting for in (sauf si déjà un in dans le channel)...");
             semIn.acquire();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-        writing = false;
+        synchronized(this) {
+            writing = false;
+        }
+        Logger.log("Fin out sur " + name + "...");
     }
-
-    public synchronized T in() {
-        reading = true;
-        updateObservers(Direction.Out);
+    
+    public T in() {
+        synchronized(this) {
+            Logger.log("Début in sur " + name + "...");
+            reading = true;
+            updateObservers(Direction.In);
+        }
         try {
-            Logger.log("Channel " + name + " waiting for out...");
+            Logger.log("Channel " + name + " waiting for out (sauf si déjà un out dans le channel)...");
             semOut.acquire();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
         semIn.release();
-        reading = false;
-        return message;
+        synchronized(this) {
+            reading = false;
+            Logger.log("Fin in sur " + name + "...");
+            return message;
+        }
     }
 
     public String getName() {

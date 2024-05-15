@@ -13,7 +13,7 @@ public class TestShm11 {
     }
 
     public static void main(String[] a) {
-        Logger.setDebug(true);
+        Logger.setDebug(false);
 
         Factory factory = new go.shm.Factory();
         Channel<Integer> c1 = factory.newChannel("c1");
@@ -38,6 +38,8 @@ public class TestShm11 {
             Channel<Integer> c = s.select();
             int v = c.in();
             if (v != 4) quit("KO");
+
+            try { Thread.sleep(100);  } catch (InterruptedException e) { }
 
             @SuppressWarnings("unchecked")
             Channel<Integer> cc = s.select();
