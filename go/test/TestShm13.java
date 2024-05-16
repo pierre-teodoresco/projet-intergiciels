@@ -12,7 +12,7 @@ public class TestShm13 {
     }
 
     public static void main(String[] a) {
-        Logger.setDebug(false);
+        Logger.setDebug(true);
 
         Factory factory = new go.shm.Factory();
         Channel<Integer> c1 = factory.newChannel("c1");
