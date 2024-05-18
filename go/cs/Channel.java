@@ -3,10 +3,15 @@ package go.cs;
 import go.Direction;
 import go.Observer;
 
-public class Channel<T> implements go.Channel<T> {
+// go.Channel<T> is already serialized
+
+public class Channel<T> implements go.Channel<T>{
+
+    private final String name;
 
     public Channel(String name) {
         // TODO
+        this.name = name;
     }
 
     public void out(T v) {
@@ -19,8 +24,7 @@ public class Channel<T> implements go.Channel<T> {
     }
 
     public String getName() {
-        // TODO
-        return null;
+        return name;
     }
 
     public void observe(Direction direction, Observer observer) {
