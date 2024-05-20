@@ -1,7 +1,7 @@
 package go.test;
 
-import go.Direction;
 import go.*;
+import log.Logger;
 
 /* select mixte */
 public class TestShm13 {
@@ -12,6 +12,8 @@ public class TestShm13 {
     }
 
     public static void main(String[] a) {
+        //Logger.setDebug(true);
+
         Factory factory = new go.shm.Factory();
         Channel<Integer> c1 = factory.newChannel("c1");
         Channel<Integer> c2 = factory.newChannel("c2");
@@ -22,34 +24,33 @@ public class TestShm13 {
                                                           c3, Direction.In));
 
         new Thread(() -> {
-                try { Thread.sleep(2000);  } catch (InterruptedException e) { }
-                quit("KO (deadlock)");
+            try { Thread.sleep(2000);  } catch (InterruptedException e) { }
+            quit("KO (deadlock)");
         }).start();
         
         new Thread(() -> {
-                int v = c1.in();
-                if (v != 4) quit("KO");
-                try { Thread.sleep(100);  } catch (InterruptedException e) { }
-                c3.out(8);
-                v = c2.in();
-                if (v != 6) quit("KO");
+            int v = c1.in();
+            if (v != 4) quit("KO");
+            try { Thread.sleep(100);  } catch (InterruptedException e) { }
+            c3.out(8);
+            try { Thread.sleep(100);  } catch (InterruptedException e) { }
+            v = c2.in();
+            if (v != 6) quit("KO");
         }).start();
 
         new Thread(() -> {
-                try { Thread.sleep(100);  } catch (InterruptedException e) { }
-                @SuppressWarnings("unchecked")
-                Channel<Integer> c = s.select();
-                c.out(4);
-                @SuppressWarnings("unchecked")
-                Channel<Integer> cc = s.select();
-                int v = cc.in();
-                if (v != 8) quit("KO");
-                @SuppressWarnings("unchecked")
-                Channel<Integer> ccc = s.select();
-                ccc.out(6);
-                quit("ok");
+            try { Thread.sleep(100);  } catch (InterruptedException e) { }
+            @SuppressWarnings("unchecked")
+            Channel<Integer> c = s.select();
+            c.out(4);
+            @SuppressWarnings("unchecked")
+            Channel<Integer> cc = s.select();
+            int v = cc.in();
+            if (v != 8) quit("KO");
+            @SuppressWarnings("unchecked")
+            Channel<Integer> ccc = s.select();
+            ccc.out(6);
+            quit("ok");
         }).start();
-        
-                   
     }
 }

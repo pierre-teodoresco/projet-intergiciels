@@ -1,22 +1,22 @@
 package go.test;
 
 import go.Channel;
-import go.Direction;
 import go.Factory;
-import go.Observer;
+import log.Logger;
 
-/** out | (in;in) | out */
-public class TestShm04 {
+/** Un unique in/out, commençant par out */
+public class TestShm00 {
 
     private static void quit(String msg) {
-        System.out.println("TestShm04: " + msg);
+        System.out.println("TestShm00: " + msg);
         System.exit(msg.equals("ok") ? 0 : 1);
     }
 
     public static void main(String[] a) {
+        Logger.setDebug(false);
+
         Factory factory = new go.shm.Factory();
         Channel<Integer> c = factory.newChannel("c");
-        c.observe(Direction.Out, () -> System.out.println("c.out"));
 
         new Thread(() -> {
             try { Thread.sleep(2000);  } catch (InterruptedException e) { }
@@ -29,17 +29,8 @@ public class TestShm04 {
 
         new Thread(() -> {
             try { Thread.sleep(200);  } catch (InterruptedException e) { }
-            c.out(5);
-        }).start();
-
-        new Thread(() -> {
-            try { Thread.sleep(100);  } catch (InterruptedException e) { }
             int v = c.in();
             quit(v == 4 ? "ok" : "KO");
-            v = c.in();
-            quit(v == 5 ? "ok" : "KO");
         }).start();
-        
-                   
     }
 }

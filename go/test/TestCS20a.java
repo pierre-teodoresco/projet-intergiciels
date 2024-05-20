@@ -2,6 +2,7 @@ package go.test;
 
 import go.Channel;
 import go.Factory;
+import log.Logger;
 
 /** Un unique in/out, ici out */
 public class TestCS20a {
@@ -12,6 +13,8 @@ public class TestCS20a {
     }
 
     public static void main(String[] a) {
+        Logger.setDebug(true);
+
         Factory factory = new go.cs.Factory();
         Channel<Integer> c = factory.newChannel("c");
 

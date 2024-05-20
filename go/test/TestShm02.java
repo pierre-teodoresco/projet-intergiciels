@@ -3,11 +3,10 @@ package go.test;
 import go.Channel;
 import go.Factory;
 
-/** in | out */
 public class TestShm02 {
 
     private static void quit(String msg) {
-        System.out.println("TestShm04: " + msg);
+        System.out.println("TestShm02: " + msg);
         System.exit(msg.equals("ok") ? 0 : 1);
     }
 
@@ -16,20 +15,19 @@ public class TestShm02 {
         Channel<Integer> c = factory.newChannel("c");
 
         new Thread(() -> {
-                try { Thread.sleep(2000);  } catch (InterruptedException e) { }
-                quit("KO (deadlock)");
-        }).start();
-        
-        new Thread(() -> {
-                try { Thread.sleep(100);  } catch (InterruptedException e) { }
-                c.out(4);
+            try { Thread.sleep(2000);  } catch (InterruptedException e) { }
+            quit("KO (deadlock)");
         }).start();
 
         new Thread(() -> {
-                int v = c.in();
-                quit(v == 4 ? "ok" : "KO");
+            c.out(42);
         }).start();
 
-
+        new Thread(() -> {
+            try { Thread.sleep(100);  } catch (InterruptedException e) { }
+            int v = c.in();
+            if (v != 42) quit("KO");
+            quit("ok");
+        }).start();
     }
 }
