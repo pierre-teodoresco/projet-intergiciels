@@ -1,3 +1,5 @@
+package go.cs;
+
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -6,7 +8,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Client<T> {
-
+    /*
     public static void main(String args[]) {
         try {
             // Se connecter au registre RMI sur le port 1099
@@ -65,7 +67,7 @@ public class Client<T> {
                                 break;
                             }
                         }
-                        proxy.ecrire(canalEcriture, message);
+                        //proxy.ecrire(canalEcriture, message);
                         System.out.println("Message envoyé avec succès.");
                         break;
                     case 4:
@@ -87,5 +89,5 @@ public class Client<T> {
         } catch (RemoteException | NotBoundException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 }
