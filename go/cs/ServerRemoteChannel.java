@@ -2,17 +2,25 @@ package go.cs;
 
 import go.Direction;
 import go.Observer;
+import log.Logger;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-public class SharedChannel<T> extends UnicastRemoteObject implements RemoteChannel<T> {
+public class ServerRemoteChannel<T> extends UnicastRemoteObject implements RemoteChannel<T> {
 
     // Utilise le channel a mémoire partagée
     private go.shm.Channel<T> channel;
 
-    public SharedChannel(String name) throws RemoteException {
+    public ServerRemoteChannel() throws RemoteException {}
+
+    public ServerRemoteChannel(String name) throws RemoteException {
         channel = new go.shm.Channel<>(name);
+        Logger.log("Channel " + channel + " created");
+    }
+
+    public go.Channel<T> getShmChannel() {
+        return channel;
     }
 
     public void out(T v) throws RemoteException {

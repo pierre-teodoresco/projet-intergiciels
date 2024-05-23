@@ -3,7 +3,8 @@ package go.cs;
 import go.Direction;
 import go.Observer;
 
-// go.Channel<T> is already serialized
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 
 public class Channel<T> implements go.Channel<T> {
 
@@ -11,10 +12,14 @@ public class Channel<T> implements go.Channel<T> {
 
     public Channel(String name) {
         try {
-            channel = new SharedChannel<>(name);
+            channel = new ServerRemoteChannel<>(name);
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public Channel(RemoteChannel<T> channel) {
+        this.channel = channel;
     }
 
     public void out(T v) {
@@ -45,7 +50,10 @@ public class Channel<T> implements go.Channel<T> {
 
     public void observe(Direction direction, Observer observer) {
         try {
-            channel.observe(direction, observer);
+            ClientCallback clientCallback = new ClientCallback(observer);
+            Registry dns = LocateRegistry.getRegistry("localhost", 1099);
+            API api = (API) dns.lookup("API");
+            api.wakeMeUp(channel.getName(), direction, clientCallback);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -22,24 +22,19 @@ public class Selector implements go.Selector {
     }
 
     public Channel select() {
-        Logger.log("Début select...");
         channels.forEach((channel, direction) -> {
             channel.observe(Direction.inverse(direction), obs.get(channel));
         });
 
         try {
             // wait for a channel to be updated
-            Logger.log("Waiting for a channel to be updated...");
             sem.acquire();
-            Logger.log("Semaphore acquire, selecting channel...");
-            Logger.log("sem has " + sem.availablePermits() + " token(s) available");
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 
         // return the first channel updated
         Channel c = ch.get(0);
-        Logger.log("Selected channel: " + c.getName());
         return c;
     }
 
@@ -51,7 +46,6 @@ public class Selector implements go.Selector {
         }
 
         public void update() {
-            Logger.log("Channel " + channel.getName() + " updated in selector");
             // remove all from ch
             ch.clear();
             // add the updated channel
@@ -60,7 +54,6 @@ public class Selector implements go.Selector {
             if (sem.availablePermits() == 0) {
                 sem.release();
             }
-            Logger.log("sem has " + sem.availablePermits() + " token(s) available");
         }
     }
 }

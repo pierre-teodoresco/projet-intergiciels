@@ -13,18 +13,15 @@ import static java.lang.System.exit;
 
 public class Factory implements go.Factory {
 
-    private final RemoteFactory proxy;
+    private final API proxy;
 
     public Factory() {
        try {
            // Se connecter au registre RMI sur le port 1099
            Registry dns = LocateRegistry.getRegistry("localhost", 1099);
 
-           Logger.log("Factory: looking up Factory");
-
            // Obtenir une référence à l'interface du serveur
-           proxy = (RemoteFactory) dns.lookup("Factory");
-           Logger.log("Factory: connected to Factory " + proxy);
+           proxy = (API) dns.lookup("API");
        } catch (Exception e) {
            throw new RuntimeException(e);
        }
@@ -36,9 +33,8 @@ public class Factory implements go.Factory {
      */
     public <T> go.Channel<T> newChannel(String name) {
         try {
-            go.Channel<T> c = proxy.newChannel(name);
-            Logger.log("Factory: newChannel " + c);
-            return c;
+            RemoteChannel<T> channel = proxy.newChannel(name);
+            return new Channel<>(channel);
         } catch (RemoteException e) {
             e.printStackTrace();
             return null;
@@ -47,22 +43,14 @@ public class Factory implements go.Factory {
     
     /** Spécifie quels sont les canaux écoutés et la direction pour chacun. */
     public go.Selector newSelector(Map<go.Channel, Direction> channels) {
-        try {
-            return proxy.newSelector(channels);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-            return null;
-        }
+        // TODO
+        return null;
     }
 
     /** Spécifie quels sont les canaux écoutés et la même direction pour tous. */
     public go.Selector newSelector(Set<go.Channel> channels, Direction direction) {
-        try {
-            return proxy.newSelector(channels, direction);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-            return null;
-        }
+        // TODO
+        return null;
     }
 }
 
