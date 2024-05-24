@@ -33,7 +33,7 @@ public class Channel<T> implements go.Channel<T> {
         }
         semOut.release();
         try {
-            Logger.log("Channel " + name + " waiting for in...");
+            Logger.log("Channel " + this + " waiting for in...");
             semIn.acquire();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -51,7 +51,7 @@ public class Channel<T> implements go.Channel<T> {
             updateObservers(Direction.In);
         }
         try {
-            Logger.log("Channel " + name + " waiting for out...");
+            Logger.log("Channel " + this + " waiting for out...");
             semOut.acquire();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

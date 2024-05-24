@@ -1,6 +1,7 @@
 package go.cs;
 
 import go.Direction;
+import log.Logger;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -27,6 +28,7 @@ public class ServerAPI extends UnicastRemoteObject implements API {
         }
         channel.observe(direction, () -> {
             try {
+                Logger.log("Channel shm cb = " + channel.getShmChannel());
                 cb.wakeUp();
             } catch (RemoteException e) {
                 e.printStackTrace();
