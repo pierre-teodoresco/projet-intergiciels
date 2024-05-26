@@ -8,23 +8,23 @@ import java.rmi.registry.Registry;
 
 public class Channel<T> implements go.Channel<T> {
 
-    private RemoteChannel<T> channel;
+    private RemoteChannel<T> proxy;
 
     public Channel(String name) {
         try {
-            channel = new ServerRemoteChannel<>(name);
+            proxy = new ServerRemoteChannel<>(name);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public Channel(RemoteChannel<T> channel) {
-        this.channel = channel;
+    public Channel(RemoteChannel<T> proxy) {
+        this.proxy = proxy;
     }
 
     public void out(T v) {
         try {
-            channel.out(v);
+            proxy.out(v);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -32,7 +32,7 @@ public class Channel<T> implements go.Channel<T> {
     
     public T in() {
         try {
-            return channel.in();
+            return proxy.in();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -41,7 +41,7 @@ public class Channel<T> implements go.Channel<T> {
 
     public String getName() {
         try {
-            return channel.getName();
+            return proxy.getName();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -53,7 +53,7 @@ public class Channel<T> implements go.Channel<T> {
             ClientCallback clientCallback = new ClientCallback(observer);
             Registry dns = LocateRegistry.getRegistry("localhost", 1099);
             API api = (API) dns.lookup("API");
-            api.wakeMeUp(channel.getName(), direction, clientCallback);
+            api.wakeMeUp(proxy.getName(), direction, clientCallback);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -19,7 +19,7 @@ public class ServerRemoteChannel<T> extends UnicastRemoteObject implements Remot
         Logger.info("Channel " + channel + " created");
     }
 
-    public go.Channel<T> getShmChannel() {
+    public go.Channel<T> getShmChannel() throws RemoteException {
         return channel;
     }
 

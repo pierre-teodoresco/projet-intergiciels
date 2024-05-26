@@ -6,10 +6,12 @@ import log.Logger;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class ServerAPI extends UnicastRemoteObject implements API {
 
-    private HashMap<String, RemoteChannel> channels = new HashMap<>();
+    public static HashMap<String, RemoteChannel> channels = new HashMap<>();
 
     public ServerAPI() throws RemoteException {}
 
@@ -18,6 +20,10 @@ public class ServerAPI extends UnicastRemoteObject implements API {
             channels.put(name, new ServerRemoteChannel(name));
         }
         return channels.get(name);
+    }
+
+    public RemoteSelector newSelector(Map<String, Direction> channels) throws RemoteException {
+        return new ServerRemoteSelector(channels);
     }
 
     public void wakeMeUp(String channelName, Direction direction, Callback cb) throws RemoteException {

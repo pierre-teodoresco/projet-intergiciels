@@ -1,15 +1,16 @@
 package go.cs;
 
 import go.Direction;
-import log.Logger;
 
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Set;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-import static java.lang.System.exit;
 
 public class Factory implements go.Factory {
 
@@ -43,14 +44,31 @@ public class Factory implements go.Factory {
     
     /** Spécifie quels sont les canaux écoutés et la direction pour chacun. */
     public go.Selector newSelector(Map<go.Channel, Direction> channels) {
-        // TODO
-        return null;
+        try {
+            Map<String, Direction> remoteChannels = new HashMap<>();
+            for (Map.Entry<go.Channel, Direction> entry : channels.entrySet()) {
+                remoteChannels.put(entry.getKey().getName(), entry.getValue());
+            }
+            RemoteSelector selector = proxy.newSelector(remoteChannels);
+            return new Selector(selector);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /** Spécifie quels sont les canaux écoutés et la même direction pour tous. */
     public go.Selector newSelector(Set<go.Channel> channels, Direction direction) {
-        // TODO
-        return null;
+        try {
+            Map<String, Direction> remoteChannels = channels
+                .stream()
+                .collect(Collectors.toMap(go.Channel::getName, e -> direction));
+            RemoteSelector selector = proxy.newSelector(remoteChannels);
+            return new Selector(selector);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
 
