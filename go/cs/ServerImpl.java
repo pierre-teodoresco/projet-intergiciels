@@ -16,7 +16,7 @@ public class ServerImpl {
             API api = new ServerAPI();
             Registry dns = LocateRegistry.createRegistry(1099);
             dns.bind("API", api);
-            Logger.log("RMI Server listening port 1099...");
+            Logger.info("RMI Server listening port 1099...");
 
             while (true) {
                 Thread.sleep(1000);

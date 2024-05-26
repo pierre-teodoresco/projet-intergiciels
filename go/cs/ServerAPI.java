@@ -27,12 +27,12 @@ public class ServerAPI extends UnicastRemoteObject implements API {
             throw new RemoteException("Channel not found");
         }
         channel.observe(direction, () -> {
-            try {
-                Logger.log("Channel shm cb = " + channel.getShmChannel());
-                cb.wakeUp();
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
+           try {
+               Logger.info("Waking up client");
+               cb.wakeUp();
+           } catch (RemoteException e) {
+               Logger.error("Error while waking up client", e);
+           }
         });
     }
 }

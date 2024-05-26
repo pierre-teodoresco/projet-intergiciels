@@ -26,14 +26,14 @@ public class Channel<T> implements go.Channel<T> {
 
     public void out(T v) {
         synchronized(this) {
-            Logger.log("Beginning out on " + this + "...");
+            Logger.info("Beginning out on " + this + "...");
             writing = true;
             message = v;
             updateObservers(Direction.Out);
         }
         semOut.release();
         try {
-            Logger.log("Channel " + this + " waiting for in...");
+            Logger.info("Channel " + this + " waiting for in...");
             semIn.acquire();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -41,17 +41,17 @@ public class Channel<T> implements go.Channel<T> {
         synchronized(this) {
             writing = false;
         }
-        Logger.log("Ending out on " + this);
+        Logger.info("Ending out on " + this);
     }
     
     public T in() {
         synchronized(this) {
-            Logger.log("Beginning in on " + this + "...");
+            Logger.info("Beginning in on " + this + "...");
             reading = true;
             updateObservers(Direction.In);
         }
         try {
-            Logger.log("Channel " + this + " waiting for out...");
+            Logger.info("Channel " + this + " waiting for out...");
             semOut.acquire();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -59,7 +59,7 @@ public class Channel<T> implements go.Channel<T> {
         semIn.release();
         synchronized(this) {
             reading = false;
-            Logger.log("Ending in on " + this);
+            Logger.info("Ending in on " + this);
             return message;
         }
     }
@@ -75,15 +75,15 @@ public class Channel<T> implements go.Channel<T> {
             observer.update();
         } else {
             if (!observers.get(dir).contains(observer)) {
-                Logger.log("Adding observer for " + dir + " on " + this);
+                Logger.info("Adding observer for " + dir + " on " + this);
                 observers.get(dir).add(observer);
-                Logger.log("observe: observers of " + this + " = " + observers);
+                Logger.info("observe: observers of " + this + " = " + observers);
             }
         }
     }
 
     private void updateObservers(Direction dir) {
-        Logger.log("update: observers of " + this + " = " + observers);
+        Logger.info("update: observers of " + this + " = " + observers);
         Iterator<Observer> it = observers.get(dir).iterator();
         while (it.hasNext()) {
             it.next().update();

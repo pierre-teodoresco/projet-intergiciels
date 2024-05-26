@@ -1,6 +1,7 @@
 package go.test;
 
 import go.Channel;
+import go.Direction;
 import go.Factory;
 import log.Logger;
 
@@ -19,11 +20,13 @@ public class TestCS21b {
         Channel<Integer> c = factory.newChannel("c");
 
         new Thread(() -> {
-                try { Thread.sleep(100000);  } catch (InterruptedException e) { }
+                try { Thread.sleep(5000);  } catch (InterruptedException e) { }
                 quit("KO (deadlock)");
         }).start();
 
-        Logger.log("Client out...");
+        Logger.info("Client observing...");
+        c.observe(Direction.In, () -> Logger.info("Client notified (in)"));
+        Logger.info("Client out...");
         c.out(4);
         quit("ok");
     }

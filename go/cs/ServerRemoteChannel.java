@@ -16,7 +16,7 @@ public class ServerRemoteChannel<T> extends UnicastRemoteObject implements Remot
 
     public ServerRemoteChannel(String name) throws RemoteException {
         channel = new go.shm.Channel<>(name);
-        Logger.log("Channel " + channel + " created");
+        Logger.info("Channel " + channel + " created");
     }
 
     public go.Channel<T> getShmChannel() {
