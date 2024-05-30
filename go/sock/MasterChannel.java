@@ -52,7 +52,7 @@ public class MasterChannel<T> implements Channel<T>, Runnable {
                     Logger.info("Fonction = " + function);
 
                     if (function.equals("out")) {
-                        // TODO
+                        new Thread(() -> handleOut(client)).start();
                     } else if (function.equals("in")) {
                         new Thread(() -> handleIn(client)).start();
                     } else {
@@ -91,6 +91,22 @@ public class MasterChannel<T> implements Channel<T>, Runnable {
             } catch (IOException e) {
                 Logger.error("Erreur lors de la fermeture de la socket client", e);
             }
+        }
+    }
+
+    private void handleOut(Socket client) {
+        try {
+            PrintWriter output = new PrintWriter(client.getOutputStream(), true);
+            output.println("ok");
+            Logger.info("Accusé de réception envoyé au client");
+
+            ObjectInputStream input = new ObjectInputStream(client.getInputStream());
+            T v = (T) input.readObject();
+            Logger.info("Valeur reçue du client: " + v);
+            out(v);
+            Logger.info("Valeur écrite dans le canal");
+        } catch (IOException | ClassNotFoundException e) {
+            Logger.error("Erreur lors de la lecture de la valeur", e);
         }
     }
 }
