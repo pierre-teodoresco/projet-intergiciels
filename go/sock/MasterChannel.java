@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class MasterChannel<T> implements Channel<T>, Runnable {
 
     private final go.shm.Channel<T> shmChannel;
+
     private final String addr;
     private final int port;
 
@@ -40,10 +41,10 @@ public class MasterChannel<T> implements Channel<T>, Runnable {
 
     public void run() {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
-            System.out.println("Le serveur est en attente de connexion sur le port " + port + "...");
+            Logger.info("Le MasterChannel est en attente de connexion sur le port " + port + "...");
             while (true) {
                 try (Socket socket = serverSocket.accept()) {
-                    System.out.println("Cookie connecté");
+                    Logger.info("Cookie connecté");
 
                     // Lire les données envoyées par le client
                     BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -65,11 +66,19 @@ public class MasterChannel<T> implements Channel<T>, Runnable {
                         output.writeObject(v.get());
                     }
                 } catch (IOException e) {
-                    Logger.error("Slave Out", e);
+                    Logger.error("MasterChannel", e);
                 }
             }
         } catch (Exception e) {
-            System.out.println("Erreur de démarrage du serveur: " + e.getMessage());
+            Logger.error("MasterChannel", e);
         }
+    }
+
+    public String getAddr() {
+        return addr;
+    }
+
+    public int getPort() {
+        return port;
     }
 }

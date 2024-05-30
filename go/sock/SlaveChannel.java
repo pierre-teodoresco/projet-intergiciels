@@ -27,6 +27,7 @@ public class SlaveChannel<T> implements go.Channel<T> {
     }
 
     public void out(T v) {
+        Logger.info("MasterChannel: \tport=" + masterPort + "\taddr=" + masterAddr);
         try (Socket socket = new Socket(masterAddr, masterPort)) {
             PrintWriter zoiper = new PrintWriter(socket.getOutputStream(), true);
             zoiper.println("out");
@@ -54,6 +55,7 @@ public class SlaveChannel<T> implements go.Channel<T> {
     }
 
     public T in() {
+        Logger.info("MasterChannel: \tport=" + masterPort + "\taddr=" + masterAddr);
         try (Socket socket = new Socket(masterAddr, masterPort)) {
             PrintWriter zoiper = new PrintWriter(socket.getOutputStream(), true);
             zoiper.println("in");

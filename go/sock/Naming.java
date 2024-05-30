@@ -20,12 +20,10 @@ public class Naming {
     public static void main(String[] args) {
         Logger.setDebug(true);
         try (ServerSocket serverSocket = new ServerSocket(SERVER_PORT)) {
-            System.out.println("Le serveur est en attente de connexion sur le port " + SERVER_PORT + "...");
+            Logger.info("Le serveur est en attente de connexion sur le port " + SERVER_PORT + "...");
 
             while (true) {
                 try (Socket socket = serverSocket.accept()) {
-                    System.out.println("Cookie connecté");
-
                     // Lire les données envoyées par le client
                     BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     String name = input.readLine();
@@ -36,23 +34,24 @@ public class Naming {
                     output.writeObject(channel);
 
                 } catch (IOException e) {
-                    System.out.println("Erreur dans la communication avec le client: " + e.getMessage());
+                    Logger.error("Erreur dans la communication avec le client", e);
                 }
             }
         } catch (IOException e) {
-            System.out.println("Erreur de démarrage du serveur: " + e.getMessage());
+            Logger.error("Erreur de démarrage du serveur", e);
         }
     }
 
     private static <T> go.Channel<T> getChannel(String name, String masterAddr, int masterPort) {
         go.Channel<T> result;
         if (masters.containsKey(name)) {
-            result = new SlaveChannel<>(name, masterAddr, masterPort);
+            MasterChannel master = masters.get(name);
+            result = new SlaveChannel<>(name, master.getAddr(), master.getPort());
         } else {
+            Logger.info("MasterChannel: \tport=" + masterPort + "\taddr=" + masterAddr);
             result = new MasterChannel<>(name, masterAddr, masterPort);
             masters.put(name, (MasterChannel) result);
         }
-        Logger.info("Channel créé: " + name);
         return result;
     }
 
