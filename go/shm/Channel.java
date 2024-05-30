@@ -26,14 +26,12 @@ public class Channel<T> implements go.Channel<T> {
 
     public void out(T v) {
         synchronized(this) {
-            Logger.info("Beginning out on " + this + "...");
             writing = true;
             message = v;
             updateObservers(Direction.Out);
         }
         semOut.release();
         try {
-            Logger.info("Channel " + this + " waiting for in...");
             semIn.acquire();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -41,17 +39,14 @@ public class Channel<T> implements go.Channel<T> {
         synchronized(this) {
             writing = false;
         }
-        Logger.info("Ending out on " + this);
     }
-    
+
     public T in() {
         synchronized(this) {
-            Logger.info("Beginning in on " + this + "...");
             reading = true;
             updateObservers(Direction.In);
         }
         try {
-            Logger.info("Channel " + this + " waiting for out...");
             semOut.acquire();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -59,7 +54,6 @@ public class Channel<T> implements go.Channel<T> {
         semIn.release();
         synchronized(this) {
             reading = false;
-            Logger.info("Ending in on " + this);
             return message;
         }
     }
@@ -75,15 +69,12 @@ public class Channel<T> implements go.Channel<T> {
             observer.update();
         } else {
             if (!observers.get(dir).contains(observer)) {
-                Logger.info("Adding observer for " + dir + " on " + this);
                 observers.get(dir).add(observer);
-                Logger.info("observe: observers of " + this + " = " + observers);
             }
         }
     }
 
     private void updateObservers(Direction dir) {
-        Logger.info("update: observers of " + this + " = " + observers);
         Iterator<Observer> it = observers.get(dir).iterator();
         while (it.hasNext()) {
             it.next().update();

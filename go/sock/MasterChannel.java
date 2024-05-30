@@ -8,7 +8,6 @@ import log.Logger;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class MasterChannel<T> implements Channel<T>, Runnable {
 
@@ -43,27 +42,21 @@ public class MasterChannel<T> implements Channel<T>, Runnable {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             Logger.info("Le MasterChannel est en attente de connexion sur le port " + port + "...");
             while (true) {
-                try (Socket socket = serverSocket.accept()) {
-                    Logger.info("Cookie connecté");
+                try (Socket client = serverSocket.accept()) {
+                    Logger.info("Connexion établie avec " + client.getInetAddress().getHostAddress() + ":" + client.getPort());
 
-                    // Lire les données envoyées par le client
-                    BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    // Read function (string in/out)
+                    BufferedReader input = new BufferedReader(new InputStreamReader(client.getInputStream()));
                     String function = input.readLine();
 
+                    Logger.info("Fonction = " + function);
+
                     if (function.equals("out")) {
-                        PrintWriter zoiper = new PrintWriter(socket.getOutputStream(), true);
-                        zoiper.println("ok");
-
-                        ObjectInputStream inputValue = new ObjectInputStream(socket.getInputStream());
-                        T v = (T) inputValue.readObject();
-
-                        new Thread(() -> shmChannel.out(v)).start();
+                        // TODO
                     } else if (function.equals("in")) {
-                        AtomicReference<T> v = new AtomicReference<>();
-                        new Thread(() -> v.set(shmChannel.in())).start();
-
-                        ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
-                        output.writeObject(v.get());
+                        new Thread(() -> handleIn(client)).start();
+                    } else {
+                        Logger.error("MasterChannel", new Exception("Fonction inconnue"));
                     }
                 } catch (IOException e) {
                     Logger.error("MasterChannel", e);
@@ -80,5 +73,24 @@ public class MasterChannel<T> implements Channel<T>, Runnable {
 
     public int getPort() {
         return port;
+    }
+
+    private void handleIn(Socket client) {
+        T v = in();
+        Logger.info("Valeur lue dans le canal: " + v);
+        try {
+            ObjectOutputStream output = new ObjectOutputStream(client.getOutputStream());
+            output.writeObject(v);
+            output.flush();
+            Logger.info("Valeur envoyée au client");
+        } catch (IOException e) {
+            Logger.error("Erreur lors de l'envoi de la réponse", e);
+        } finally {
+            try {
+                client.close(); // Assurez-vous de fermer la socket après l'envoi de la réponse
+            } catch (IOException e) {
+                Logger.error("Erreur lors de la fermeture de la socket client", e);
+            }
+        }
     }
 }

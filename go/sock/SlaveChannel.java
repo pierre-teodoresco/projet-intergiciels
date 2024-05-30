@@ -1,6 +1,5 @@
 package go.sock;
 
-import go.Channel;
 import go.Direction;
 import go.Observer;
 import log.Logger;
@@ -27,50 +26,31 @@ public class SlaveChannel<T> implements go.Channel<T> {
     }
 
     public void out(T v) {
-        Logger.info("MasterChannel: \tport=" + masterPort + "\taddr=" + masterAddr);
-        try (Socket socket = new Socket(masterAddr, masterPort)) {
-            PrintWriter zoiper = new PrintWriter(socket.getOutputStream(), true);
-            zoiper.println("out");
-
-            BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            String message = input.readLine();
-
-            if (!message.equals("ok")) {
-                Logger.error("Slave Out", new Exception("Erreur lors de l'envoi de la valeur"));
-            }
-
-            ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
-            output.writeObject(v);
-
-            input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            message = input.readLine();
-
-            if (!message.equals("ok")) {
-                Logger.error("Slave Out", new Exception("Erreur lors de l'envoi de la valeur"));
-            }
-
-        } catch (IOException e) {
-            Logger.error("Slave Out", e);
-        }
+        // TODO
     }
 
     public T in() {
-        Logger.info("MasterChannel: \tport=" + masterPort + "\taddr=" + masterAddr);
-        try (Socket socket = new Socket(masterAddr, masterPort)) {
-            PrintWriter zoiper = new PrintWriter(socket.getOutputStream(), true);
-            zoiper.println("in");
+        try (Socket server = new Socket(masterAddr, masterPort)) {
+            Logger.info("Connexion établie avec " + server.getInetAddress().getHostAddress() + ":" + server.getPort());
 
-            ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
-            return (T) input.readObject();
+            // Send function (string in)
+            PrintWriter output = new PrintWriter(server.getOutputStream(), true);
+            output.println("in");
 
+            Logger.info("En attente de la valeur dans le canal...");
+
+            try (ObjectInputStream input = new ObjectInputStream(server.getInputStream())) {
+                T result = (T) input.readObject();
+                Logger.info("Valeur lue dans le canal: " + result);
+                return result;
+            }
         } catch (IOException | ClassNotFoundException e) {
-            Logger.error("Slave Out", e);
+            Logger.error("Erreur de communication avec le serveur", e);
+            return null;
         }
-        return null;
     }
 
-    // Ignore
     public void observe(Direction direction, Observer observer) {
-
+        // Ignore
     }
 }
