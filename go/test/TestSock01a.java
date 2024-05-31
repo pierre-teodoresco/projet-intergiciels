@@ -24,7 +24,6 @@ public class TestSock01a {
         }).start();
 
         c.out(42);
-        quit("ok");
     }
 }
 

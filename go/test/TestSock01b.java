@@ -24,7 +24,7 @@ public class TestSock01b {
         }).start();
 
         int v = c.in();
-        quit(v == 42 ? "ok" : "KO (bad value)");
+        Logger.info(v == 42 ? "ok" : "KO (bad value)");
     }
 }
 
