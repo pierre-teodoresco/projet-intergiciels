@@ -12,7 +12,7 @@ public class TestSock01b {
         System.exit(msg.equals("ok") ? 0 : 1);
     }
 
-    public static void main(String[] a) {
+    public static void main(String[] a) throws InterruptedException {
         Logger.setDebug(true);
 
         Factory factory = new go.sock.Factory();
@@ -24,7 +24,8 @@ public class TestSock01b {
         }).start();
 
         int v = c.in();
-        Logger.info(v == 42 ? "ok" : "KO (bad value)");
+        Thread.sleep(10);
+        quit(v == 42 ? "ok" : "KO (bad value)");
     }
 }
 
