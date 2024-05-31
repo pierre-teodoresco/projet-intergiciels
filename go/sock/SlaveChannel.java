@@ -9,11 +9,11 @@ import java.net.Socket;
 
 public class SlaveChannel<T> implements go.Channel<T> {
 
-    private String name;
+    private final String name;
 
     // Socket
-    private String masterAddr;
-    private int masterPort;
+    private final String masterAddr;
+    private final int masterPort;
 
     public SlaveChannel(String name, String masterAddr, int masterPort) {
         this.name = name;
@@ -26,54 +26,34 @@ public class SlaveChannel<T> implements go.Channel<T> {
     }
 
     public void out(T v) {
-        try (Socket server = new Socket(masterAddr, masterPort)) {
-            Logger.info("Connexion établie avec " + server.getInetAddress().getHostAddress() + ":" + server.getPort());
+        try (Socket socket = new Socket(masterAddr, masterPort);
+             ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream())) {
 
-            // Send function (string in)
-            PrintWriter output = new PrintWriter(server.getOutputStream(), true);
-            output.println("out");
-
-            BufferedReader input = new BufferedReader(new InputStreamReader(server.getInputStream()));
-            String ack = input.readLine();
-
-            if (!ack.equals("ok")) {
-                Logger.error("Erreur de communication avec le serveur", new Exception());
-                return;
-            }
-
-            Logger.info("Envoi de la valeur dans le canal: " + v);
-
-            try (ObjectOutputStream oos = new ObjectOutputStream(server.getOutputStream())) {
-                oos.writeObject(v);
-                oos.flush();
-            } finally {
-                server.close();
-            }
-
+            Logger.info("Sending out request with message: " + v);
+            output.writeObject("out");
+            output.writeObject(v);
+            output.flush();
         } catch (IOException e) {
-            Logger.error("Erreur de communication avec le serveur", e);
+            Logger.error("Error while connecting to the master", e);
         }
     }
 
     public T in() {
-        try (Socket server = new Socket(masterAddr, masterPort)) {
-            Logger.info("Connexion établie avec " + server.getInetAddress().getHostAddress() + ":" + server.getPort());
+        try (Socket socket = new Socket(masterAddr, masterPort);
+             ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
+             ObjectInputStream input = new ObjectInputStream(socket.getInputStream())) {
 
-            // Send function (string in)
-            PrintWriter output = new PrintWriter(server.getOutputStream(), true);
-            output.println("in");
+            Logger.info("Sending in request");
+            output.writeObject("in");
+            output.flush();
 
-            Logger.info("En attente de la valeur dans le canal...");
+            @SuppressWarnings("unchecked")
+            T v = (T) input.readObject();
+            Logger.info("Received message: " + v);
 
-            try (ObjectInputStream input = new ObjectInputStream(server.getInputStream())) {
-                T result = (T) input.readObject();
-                Logger.info("Valeur lue dans le canal: " + result);
-                return result;
-            } finally {
-                server.close();
-            }
+            return v;
         } catch (IOException | ClassNotFoundException e) {
-            Logger.error("Erreur de communication avec le serveur", e);
+            Logger.error("Error while connecting to the master", e);
             return null;
         }
     }

@@ -40,30 +40,14 @@ public class MasterChannel<T> implements Channel<T>, Runnable {
 
     public void run() {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
-            Logger.info("Le MasterChannel est en attente de connexion sur le port " + port + "...");
+            Logger.info("MasterChannel started on " + port + "...");
             while (true) {
-                try (Socket client = serverSocket.accept()) {
-                    Logger.info("Connexion établie avec " + client.getInetAddress().getHostAddress() + ":" + client.getPort());
-
-                    // Read function (string in/out)
-                    BufferedReader input = new BufferedReader(new InputStreamReader(client.getInputStream()));
-                    String function = input.readLine();
-
-                    Logger.info("Fonction = " + function);
-
-                    if (function.equals("out")) {
-                        new Thread(() -> handleOut(client)).start();
-                    } else if (function.equals("in")) {
-                        new Thread(() -> handleIn(client)).start();
-                    } else {
-                        Logger.error("MasterChannel", new Exception("Fonction inconnue"));
-                    }
-                } catch (IOException e) {
-                    Logger.error("MasterChannel", e);
-                }
+                Socket client = serverSocket.accept();
+                Logger.info("Client connected: " + client.getInetAddress().getHostAddress() + ":" + client.getPort());
+                new Thread(() -> handleConnection(client)).start();
             }
-        } catch (Exception e) {
-            Logger.error("MasterChannel", e);
+        } catch (IOException e) {
+            Logger.error("Error at server socket creation", e);
         }
     }
 
@@ -75,38 +59,35 @@ public class MasterChannel<T> implements Channel<T>, Runnable {
         return port;
     }
 
-    private void handleIn(Socket client) {
-        T v = in();
-        Logger.info("Valeur lue dans le canal: " + v);
-        try {
-            ObjectOutputStream output = new ObjectOutputStream(client.getOutputStream());
-            output.writeObject(v);
-            output.flush();
-            Logger.info("Valeur envoyée au client");
-        } catch (IOException e) {
-            Logger.error("Erreur lors de l'envoi de la réponse", e);
+    private void handleConnection(Socket client) {
+        try (ObjectOutputStream output = new ObjectOutputStream(client.getOutputStream());
+             ObjectInputStream input = new ObjectInputStream(client.getInputStream())) {
+
+            String operation = (String) input.readObject();
+            Logger.info("Received operation: " + operation);
+
+            if ("in".equals(operation)) {
+                T message = in();
+                Logger.info("Sending message: " + message);
+                output.writeObject(message);
+                output.flush();
+            } else if ("out".equals(operation)) {
+                @SuppressWarnings("unchecked")
+                T message = (T) input.readObject();
+                Logger.info("Received message to out: " + message);
+                out(message);
+            } else {
+                Logger.error("Unknown operation: " + operation);
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            Logger.error("Error in client communication", e);
         } finally {
             try {
-                client.close(); // Assurez-vous de fermer la socket après l'envoi de la réponse
+                Logger.info("Closing client connection: " + client.getInetAddress().getHostAddress() + ":" + client.getPort());
+                client.close();
             } catch (IOException e) {
-                Logger.error("Erreur lors de la fermeture de la socket client", e);
+                Logger.error("Error in client socket closing", e);
             }
-        }
-    }
-
-    private void handleOut(Socket client) {
-        try {
-            PrintWriter output = new PrintWriter(client.getOutputStream(), true);
-            output.println("ok");
-            Logger.info("Accusé de réception envoyé au client");
-
-            ObjectInputStream input = new ObjectInputStream(client.getInputStream());
-            T v = (T) input.readObject();
-            Logger.info("Valeur reçue du client: " + v);
-            out(v);
-            Logger.info("Valeur écrite dans le canal");
-        } catch (IOException | ClassNotFoundException e) {
-            Logger.error("Erreur lors de la lecture de la valeur", e);
         }
     }
 }
