@@ -25,37 +25,30 @@ public class Channel<T> implements go.Channel<T> {
     }
 
     public void out(T v) {
-        synchronized(this) {
-            writing = true;
-            message = v;
-            updateObservers(Direction.Out);
-        }
+        writing = true;
+        message = v;
+        updateObservers(Direction.Out);
         semOut.release();
         try {
             semIn.acquire();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-        synchronized(this) {
-            writing = false;
-        }
+        writing = false;
     }
 
     public T in() {
-        synchronized(this) {
-            reading = true;
-            updateObservers(Direction.In);
-        }
+        reading = true;
+        updateObservers(Direction.In);
+        
         try {
             semOut.acquire();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
         semIn.release();
-        synchronized(this) {
-            reading = false;
-            return message;
-        }
+        reading = false;
+        return message;
     }
 
     public String getName() {
