@@ -3,6 +3,7 @@ package go.sock;
 import go.Channel;
 import go.Direction;
 import go.Selector;
+import log.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,6 +25,9 @@ public class Factory implements go.Factory {
             ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
             Channel<T> channel = (Channel<T>) input.readObject();
 
+            // Fermer la connexion
+            socket.close();
+
             if (channel instanceof MasterChannel) {
                 new Thread((MasterChannel) channel).start();
             }
@@ -31,7 +35,7 @@ public class Factory implements go.Factory {
             return new go.sock.Channel(channel);
 
         } catch (IOException | ClassNotFoundException e) {
-            System.out.println("Erreur de connexion au serveur: " + e.getMessage());
+            Logger.error("Erreur de connexion au serveur", e);
         }
         return null;
     }

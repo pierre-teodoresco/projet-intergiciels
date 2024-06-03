@@ -1,6 +1,5 @@
 package go.sock;
 
-import go.Channel;
 import go.Direction;
 import go.Observer;
 import log.Logger;
@@ -10,11 +9,11 @@ import java.net.Socket;
 
 public class SlaveChannel<T> implements go.Channel<T> {
 
-    private String name;
+    private final String name;
 
     // Socket
-    private String masterAddr;
-    private int masterPort;
+    private final String masterAddr;
+    private final int masterPort;
 
     public SlaveChannel(String name, String masterAddr, int masterPort) {
         this.name = name;
@@ -27,48 +26,39 @@ public class SlaveChannel<T> implements go.Channel<T> {
     }
 
     public void out(T v) {
-        try (Socket socket = new Socket(masterAddr, masterPort)) {
-            PrintWriter zoiper = new PrintWriter(socket.getOutputStream(), true);
-            zoiper.println("out");
+        try (Socket socket = new Socket(masterAddr, masterPort);
+             ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream())) {
 
-            BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            String message = input.readLine();
-
-            if (!message.equals("ok")) {
-                Logger.error("Slave Out", new Exception("Erreur lors de l'envoi de la valeur"));
-            }
-
-            ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
+            Logger.info("Sending out request with message: " + v);
+            output.writeObject("out");
             output.writeObject(v);
-
-            input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            message = input.readLine();
-
-            if (!message.equals("ok")) {
-                Logger.error("Slave Out", new Exception("Erreur lors de l'envoi de la valeur"));
-            }
-
+            output.flush();
         } catch (IOException e) {
-            Logger.error("Slave Out", e);
+            Logger.error("Error while connecting to the master", e);
         }
     }
 
     public T in() {
-        try (Socket socket = new Socket(masterAddr, masterPort)) {
-            PrintWriter zoiper = new PrintWriter(socket.getOutputStream(), true);
-            zoiper.println("in");
+        try (Socket socket = new Socket(masterAddr, masterPort);
+             ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
+             ObjectInputStream input = new ObjectInputStream(socket.getInputStream())) {
 
-            ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
-            return (T) input.readObject();
+            Logger.info("Sending in request");
+            output.writeObject("in");
+            output.flush();
 
+            @SuppressWarnings("unchecked")
+            T v = (T) input.readObject();
+            Logger.info("Received message: " + v);
+
+            return v;
         } catch (IOException | ClassNotFoundException e) {
-            Logger.error("Slave Out", e);
+            Logger.error("Error while connecting to the master", e);
+            return null;
         }
-        return null;
     }
 
-    // Ignore
     public void observe(Direction direction, Observer observer) {
-
+        // Ignore
     }
 }

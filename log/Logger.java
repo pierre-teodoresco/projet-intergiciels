@@ -17,4 +17,8 @@ public class Logger {
         System.err.println(message);
         e.printStackTrace();
     }
+
+    public static void error(String message) {
+        System.err.println(message);
+    }
 }

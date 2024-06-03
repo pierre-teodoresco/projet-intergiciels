@@ -8,11 +8,11 @@ import log.Logger;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class MasterChannel<T> implements Channel<T>, Runnable {
 
     private final go.shm.Channel<T> shmChannel;
+
     private final String addr;
     private final int port;
 
@@ -40,36 +40,54 @@ public class MasterChannel<T> implements Channel<T>, Runnable {
 
     public void run() {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
-            System.out.println("Le serveur est en attente de connexion sur le port " + port + "...");
+            Logger.info("MasterChannel started on " + port + "...");
             while (true) {
-                try (Socket socket = serverSocket.accept()) {
-                    System.out.println("Cookie connecté");
-
-                    // Lire les données envoyées par le client
-                    BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                    String function = input.readLine();
-
-                    if (function.equals("out")) {
-                        PrintWriter zoiper = new PrintWriter(socket.getOutputStream(), true);
-                        zoiper.println("ok");
-
-                        ObjectInputStream inputValue = new ObjectInputStream(socket.getInputStream());
-                        T v = (T) inputValue.readObject();
-
-                        new Thread(() -> shmChannel.out(v)).start();
-                    } else if (function.equals("in")) {
-                        AtomicReference<T> v = new AtomicReference<>();
-                        new Thread(() -> v.set(shmChannel.in())).start();
-
-                        ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
-                        output.writeObject(v.get());
-                    }
-                } catch (IOException e) {
-                    Logger.error("Slave Out", e);
-                }
+                Socket client = serverSocket.accept();
+                Logger.info("Client connected: " + client.getInetAddress().getHostAddress() + ":" + client.getPort());
+                new Thread(() -> handleConnection(client)).start();
             }
-        } catch (Exception e) {
-            System.out.println("Erreur de démarrage du serveur: " + e.getMessage());
+        } catch (IOException e) {
+            Logger.error("Error at server socket creation", e);
+        }
+    }
+
+    public String getAddr() {
+        return addr;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    private void handleConnection(Socket client) {
+        try (ObjectOutputStream output = new ObjectOutputStream(client.getOutputStream());
+             ObjectInputStream input = new ObjectInputStream(client.getInputStream())) {
+
+            String operation = (String) input.readObject();
+            Logger.info("Received operation: " + operation);
+
+            if ("in".equals(operation)) {
+                T message = in();
+                Logger.info("Sending message: " + message);
+                output.writeObject(message);
+                output.flush();
+            } else if ("out".equals(operation)) {
+                @SuppressWarnings("unchecked")
+                T message = (T) input.readObject();
+                Logger.info("Received message to out: " + message);
+                out(message);
+            } else {
+                Logger.error("Unknown operation: " + operation);
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            Logger.error("Error in client communication", e);
+        } finally {
+            try {
+                Logger.info("Closing client connection: " + client.getInetAddress().getHostAddress() + ":" + client.getPort());
+                client.close();
+            } catch (IOException e) {
+                Logger.error("Error in client socket closing", e);
+            }
         }
     }
 }
