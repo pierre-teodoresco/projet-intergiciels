@@ -25,6 +25,9 @@ public class Factory implements go.Factory {
             ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
             Channel<T> channel = (Channel<T>) input.readObject();
 
+            // Fermer la connexion
+            socket.close();
+
             if (channel instanceof MasterChannel) {
                 new Thread((MasterChannel) channel).start();
             }
