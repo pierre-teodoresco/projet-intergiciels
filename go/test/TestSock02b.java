@@ -8,7 +8,7 @@ import log.Logger;
 public class TestSock02b {
 
     private static void quit(String msg) {
-        System.out.println("TestSock01b: " + msg);
+        System.out.println("TestSock02b: " + msg);
         System.exit(msg.equals("ok") ? 0 : 1);
     }
 
