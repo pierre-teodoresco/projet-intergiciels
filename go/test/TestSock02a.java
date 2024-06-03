@@ -4,8 +4,8 @@ import go.Channel;
 import go.Factory;
 import log.Logger;
 
-/** Un unique in/out, ici out */
-public class TestSock01a {
+/** passage de canal en paramètre */
+public class TestSock02a {
 
     private static void quit(String msg) {
         System.out.println("TestSock01a: " + msg);
@@ -16,16 +16,19 @@ public class TestSock01a {
         Logger.setDebug(true);
 
         Factory factory = new go.sock.Factory();
-        Channel<Integer> c = factory.newChannel("c");
+        Channel<Channel<Integer>> c = factory.newChannel("c");
+        Channel<Integer> c1 = factory.newChannel("c1");
 
         new Thread(() -> {
-                try { Thread.sleep(5000);  } catch (InterruptedException e) { }
+                try { Thread.sleep(10000);  } catch (InterruptedException e) { }
                 quit("KO (deadlock)");
         }).start();
 
-        c.out(42);
+        c.out(c1);
+        int v = c1.in();
+        // Sleep to avoid quiting to early and kill the socket
         Thread.sleep(10);
-        quit("ok");
+        quit(v == 42 ? "ok" : "KO (bad value)");
     }
 }
 

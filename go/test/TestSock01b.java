@@ -19,7 +19,7 @@ public class TestSock01b {
         Channel<Integer> c = factory.newChannel("c");
 
         new Thread(() -> {
-                try { Thread.sleep(1000000);  } catch (InterruptedException e) { }
+                try { Thread.sleep(10000);  } catch (InterruptedException e) { }
                 quit("KO (deadlock)");
         }).start();
 

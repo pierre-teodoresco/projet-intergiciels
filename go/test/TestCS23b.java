@@ -4,28 +4,27 @@ import go.Channel;
 import go.Factory;
 import log.Logger;
 
-/** Un unique in/out, ici out */
-public class TestSock01a {
+/** Un unique in/out, ici in */
+public class TestCS23b {
 
     private static void quit(String msg) {
-        System.out.println("TestSock01a: " + msg);
+        System.out.println("TestCS20b: " + msg);
         System.exit(msg.equals("ok") ? 0 : 1);
     }
 
-    public static void main(String[] a) throws InterruptedException {
+    public static void main(String[] a) {
         Logger.setDebug(true);
 
-        Factory factory = new go.sock.Factory();
-        Channel<Integer> c = factory.newChannel("c");
+        Factory factory = new go.cs.Factory();
+        Channel<Channel<Integer>> c = factory.newChannel("c");
 
         new Thread(() -> {
                 try { Thread.sleep(5000);  } catch (InterruptedException e) { }
                 quit("KO (deadlock)");
         }).start();
-
-        c.out(42);
-        Thread.sleep(10);
+        
+        Channel<Integer> c1 = c.in();
+        c1.out(4);
         quit("ok");
     }
 }
-

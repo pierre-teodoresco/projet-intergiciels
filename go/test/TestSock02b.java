@@ -5,10 +5,10 @@ import go.Factory;
 import log.Logger;
 
 /** Un unique in/out, ici out */
-public class TestSock01a {
+public class TestSock02b {
 
     private static void quit(String msg) {
-        System.out.println("TestSock01a: " + msg);
+        System.out.println("TestSock01b: " + msg);
         System.exit(msg.equals("ok") ? 0 : 1);
     }
 
@@ -16,14 +16,16 @@ public class TestSock01a {
         Logger.setDebug(true);
 
         Factory factory = new go.sock.Factory();
-        Channel<Integer> c = factory.newChannel("c");
+        Channel<Channel<Integer>> c = factory.newChannel("c");
 
         new Thread(() -> {
                 try { Thread.sleep(5000);  } catch (InterruptedException e) { }
                 quit("KO (deadlock)");
         }).start();
 
-        c.out(42);
+        Channel<Integer> c1 = c.in();
+        c1.out(42);
+        // Sleep to avoid quiting to early and kill the socket
         Thread.sleep(10);
         quit("ok");
     }
